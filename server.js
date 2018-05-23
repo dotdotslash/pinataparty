@@ -10,6 +10,7 @@ app.get('/', function(req, res){
 });
     
 io.on('connection', function(socket){
+  console.log(socket.id);
 
   socket.username = "Anonymous";
   console.log('a user connected');
@@ -18,23 +19,21 @@ io.on('connection', function(socket){
     console.log('user disconnected');
   });
 
-  //socket.send(socket.id);
-  console.log(socket.id);
-
   socket.on('join', function(username){
     socket.username = username;
     console.log('New user ' + username + ' joined');
     io.emit('joined', username);
     io.emit('adduser', username);
-
-    console.log(socket.username );
   });
 
   socket.on('send', function(msg){
-    console.log(socket.username );
-    console.log(socket.username+' sent message: ' + msg);
+      console.log(socket.username+' sent message: ' + msg);
       io.emit('onmessage', {'username': socket.username,'message': msg} );
-   // io.emit('onmessage', msg );
+  });
+
+  socket.on('device update', function(data){
+    //console.log(data);
+    io.emit('deviceInfo', data );
   });
 
   socket.on('chat message', function(msg){

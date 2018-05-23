@@ -118,33 +118,57 @@ var app = new Vue({
             app.$set('messages', data);
         },
         onmessage: function (data) {
-            console.log(app.messages);
-            console.log('username', app.username);
-            console.log('users', app.users);
-            console.log('onmessage',data);          
-           // app.$set(app.messages, data);
-//           app.$set(messages, {'fuck': 'it'});
             this.messages.push(data);
-            console.log('trace');
-            console.log(app.messages);
-            console.log('try messages');
-           // app.messages.push(data);
         },
         adduser: function (user) {
             app.users.push(user);
+        },
+        deviceInfo: function (data) {
+            console.log(data);
+
+            app.phoneStats.alpha = data.do.alpha;
+            app.phoneStats.beta = data.do.beta;
+            app.phoneStats.gamma = data.do.gamma;
+        
+            app.phoneStats.x = data.dm.x;
+            app.phoneStats.y = data.dm.y;
+            app.phoneStats.z = data.dm.z;
+
+            app.phoneStats.gx = data.dm.gx;
+            app.phoneStats.gy = data.dm.gy;
+            app.phoneStats.gz = data.dm.gz;
+        
+        
+            if (app.phoneStats.x > app.phoneStats.max_x) {
+                app.phoneStats.max_x = app.phoneStats.x;
+            }
+            if (app.phoneStats.y > app.phoneStats.max_y) {
+                app.phoneStats.max_y = app.phoneStats.y;
+            }
+            if (app.phoneStats.z > app.phoneStats.max_z) {
+                app.phoneStats.max_z = app.phoneStats.z;
+            }
         }
 
     }
 
 })
 
+
+var count = 0;
 loop();
 
 function loop() {
-   if(app.phoneStats.max_x > 0) { app.phoneStats.max_x -= 0.1;}
-   if(app.phoneStats.max_y > 0) { app.phoneStats.max_y -= 0.1;}
-   if(app.phoneStats.max_z > 0) { app.phoneStats.max_z -= 0.1;}
-            
+    if(app.phoneStats.max_x > 0) { app.phoneStats.max_x -= 0.1;}
+    if(app.phoneStats.max_y > 0) { app.phoneStats.max_y -= 0.1;}
+    if(app.phoneStats.max_z > 0) { app.phoneStats.max_z -= 0.1;}
+
+    /*
+    console.log(count);
+    app.$socket.emit('device update', count);
+    count++;
+    */
+
     requestAnimationFrame(loop);
 }
 
@@ -153,38 +177,18 @@ var gn = new GyroNorm();
 gn.init().then(function(){
   gn.start(function(data){
 
+    app.$socket.emit('device update', data);
+    
     // Process:
     // data.do.alpha	( deviceorientation event alpha value )
     // data.do.beta		( deviceorientation event beta value )
     // data.do.gamma	( deviceorientation event gamma value )
     // data.do.absolute	( deviceorientation event absolute value )
 
-    app.phoneStats.alpha = data.do.alpha;
-    app.phoneStats.beta = data.do.beta;
-    app.phoneStats.gamma = data.do.gamma;
 
-    app.phoneStats.x = data.dm.x;
-    app.phoneStats.y = data.dm.y;
-    app.phoneStats.z = data.dm.z;
     // data.dm.x		( devicemotion event acceleration x value )
     // data.dm.y		( devicemotion event acceleration y value )
     // data.dm.z		( devicemotion event acceleration z value )
-
-
-    app.phoneStats.gx = data.dm.gx;
-    app.phoneStats.gy = data.dm.gy;
-    app.phoneStats.gz = data.dm.gz;
-
-
-    if (app.phoneStats.x > app.phoneStats.max_x) {
-        app.phoneStats.max_x = app.phoneStats.x;
-    }
-    if (app.phoneStats.y > app.phoneStats.max_y) {
-        app.phoneStats.max_y = app.phoneStats.y;
-    }
-    if (app.phoneStats.z > app.phoneStats.max_z) {
-        app.phoneStats.max_z = app.phoneStats.z;
-    }
 
     // data.dm.gx		( devicemotion event accelerationIncludingGravity x value )
     // data.dm.gy		( devicemotion event accelerationIncludingGravity y value )
