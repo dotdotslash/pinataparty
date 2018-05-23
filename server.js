@@ -1,26 +1,49 @@
-var app = require('http').createServer(handler)
-var io = require('socket.io')(app);
-var fs = require('fs');
+var express = require('express');
+var app = express();  
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
 
-app.listen(3000);
+app.use(express.static(__dirname + '/dist'))
 
-function handler (req, res) {
-  fs.readFile(__dirname + '/dist/' + 'index.html',
-  function (err, data) {
+app.get('/', function(req, res){
+	res.sendFile(__dirname + '/dist/index.html');
+});
+    
+io.on('connection', function(socket){
 
-    if (err) {
-      res.writeHead(500);
-      return res.end('Error loading index.html');
-    }
-
-    res.writeHead(200);
-    res.end(data);
+  socket.username = "Anonymous";
+  console.log('a user connected');
+  
+  socket.on('disconnect', function(){
+    console.log('user disconnected');
   });
-}
 
-io.on('connection', function (socket) {
-  socket.emit('news', { hello: 'world' });
-  socket.on('my other event', function (data) {
-    console.log(data);
+  //socket.send(socket.id);
+  console.log(socket.id);
+
+  socket.on('join', function(username){
+    socket.username = username;
+    console.log('New user ' + username + ' joined');
+    io.emit('joined', username);
+    io.emit('adduser', username);
+
+    console.log(socket.username );
   });
+
+  socket.on('send', function(msg){
+    console.log(socket.username );
+    console.log(socket.username+' sent message: ' + msg);
+      io.emit('onmessage', {'username': socket.username,'message': msg} );
+   // io.emit('onmessage', msg );
+  });
+
+  socket.on('chat message', function(msg){
+    console.log('message: ' + msg);
+    io.emit('chat message', msg);
+  });	
+  
+});
+
+http.listen(7700, function(){
+  console.log('listening on *:7700');
 });

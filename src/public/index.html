@@ -21,8 +21,51 @@
 				{{ key }}: {{ value }}
 			</li>
 		</ul>
-		<button v-on:click="reset">Reset</button>
 
+        <hr>
+        <button v-on:click="reset">Reset</button>
+        
+        <div v-if="!join" id="join" >
+            <form @submit.prevent="joinChat(username)">
+                <div class="form-group">
+                    <input type="text" max="12" class="form-control input-lg text-center" v-model="username" placeholder="Name">
+                </div>
+                <button class="btn btn-primary btn-lg" type="submit">Join Chat</button>
+            </form>
+        </div>
+
+		<div v-if="join" id="group">
+            <div class="users">
+                <h4>Users</h4>
+                <ul class="list-unstyled">
+                    <li v-for="user in users" track-by="$index">{{user}}</li>
+                </ul>
+            </div>
+            <div class="chat">
+                <div class="messages">
+                    <ul class="list-unstyled">
+                        <li v-for="m in messages" :class="{me: (m.username === username), clearfix: true}">
+                            <div class="username">{{m.username}}</div>
+                            <span>{{m.message}}</span>
+                        </li>
+                    </ul>
+                </div>
+    
+                <div class="input">
+                    <form @submit.prevent="send(message)">
+                        <div class="input-group">
+                            <input type="text" class="form-control" v-model="message" placeholder="uyudun mu?...">
+                              <span class="input-group-btn">
+                                <button class="btn btn-default" type="submit">-></button>
+                              </span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    
+
+		
 	</div>
 
 </body>

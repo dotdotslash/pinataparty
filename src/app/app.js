@@ -4,12 +4,37 @@ import GyroNorm from 'gyronorm';
 
 import VueSocketio from 'vue-socket.io';
 
-Vue.use(VueSocketio, 'http://localhost:3000/');
+Vue.use(VueSocketio, 'http://localhost:7700/');
 
 //screen.lockOrientation('portrait');
 //lockedAllowed = window.screen.lockOrientation(orientation);
 
+/*
+var vm = new Vue({
+    sockets:{
+        connect: function(){
+        console.log('socket connected')
+        },
+        customEmit: function(val){
+        console.log('this method was fired by the socket server. eg: io.emit("customEmit", data)')
+        }
+    },
+    methods: {
+        clickButton: function(val){
+            // $socket is socket.io-client instance
+            this.$socket.emit('emit_method', val);
+
+            this.$options.sockets.event_name = (data) => {
+                console.log(data)
+            }
+        }
+    }
+})
+*/
+
+
 const gui = new dat.GUI();
+
 
 
 function getRandomColor() {
@@ -42,15 +67,75 @@ const phoneOBJ = {
 var app = new Vue({
     el: '#app',
     data: {
-        phoneStats: phoneOBJ
+        phoneStats: phoneOBJ,
+        join: false,
+        username: null,
+        users: [],
+        message: null,
+        messages: []
     },
     methods: {
         reset: function (event) {
             app.phoneStats.max_x = 0;
             app.phoneStats.max_y = 0;
             app.phoneStats.max_z = 0;
+        },
+        sendPosition: function(event){
+            if(event){
+                this.$socket.emit('update', event);
+            }
+        },
+        joinChat: function (username) {
+            if (username) {
+                this.$socket.emit('join', username);
+            }
+        },
+        send: function (message) {
+            if (message) {
+                this.$socket.emit('send', message);
+                //  this.$set('message', null);
+                app.message = null;
+            }
         }
-      }
+    },
+    watch: {
+        messages: function () {
+            setTimeout(function () {
+               // $('.messages ul').scrollTop(999999999);
+            }, 100)
+        }
+    },
+    sockets: {
+        users: function (users) {
+            app.$set('users', users);
+        },
+        joined: function () {
+            app.join = true;
+           // this.$set('join', true);
+        },
+        messages: function (data) {
+            console.log('messages',data);
+            app.$set('messages', data);
+        },
+        onmessage: function (data) {
+            console.log(app.messages);
+            console.log('username', app.username);
+            console.log('users', app.users);
+            console.log('onmessage',data);          
+           // app.$set(app.messages, data);
+//           app.$set(messages, {'fuck': 'it'});
+            this.messages.push(data);
+            console.log('trace');
+            console.log(app.messages);
+            console.log('try messages');
+           // app.messages.push(data);
+        },
+        adduser: function (user) {
+            app.users.push(user);
+        }
+
+    }
+
 })
 
 loop();
